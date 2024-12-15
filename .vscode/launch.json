@@ -1,0 +1,27 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug C++ (GDB)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/source/catalog",
+      "args": ["-f", "./data/catalog"],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb", 
+      "miDebuggerPath": "/usr/bin/gdb", 
+      "preLaunchTask": "build",
+      "setupCommands": [
+        {
+          "description": "Habilitar Pretty Printing no GDB",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      "logging": { "engineLogging": false }
+    }
+  ]
+}
