@@ -9,6 +9,7 @@
 
 #define PRESS_ENTER ">>> Pressione <Enter> para continuar..."
 
+#pragma region UTILS
 
 void tokenizer(std::vector<std::string> &tokens, std::string line, char divider){
   std::stringstream check1(line); 
@@ -34,7 +35,65 @@ void process_enter(){
   std::getline(std::cin, line);
 }
 
-void usage(){
+#pragma endregion // UTILs
+
+#pragma region RENDERS
+
+void Program::print_products() const {
+  m_catalog.print_catalog();
+
+  std::cout << "\n\n" << RESET << PRESS_ENTER;
+}
+
+void Program::print_orders() const {
+  int current_order = 1, size= m_orders.size();
+  for(const auto& order : m_orders){
+    order->print();
+
+    if (current_order != size) {
+      std::cout << "\n\n Pressione <Enter> para ver o próximo pedido ou <X> "
+                    "para sair ("
+                << current_order << "/" << size << ") > ";
+
+      std::string line;
+      std::getline(std::cin, line);
+
+      if (line == "x" || line == "X")
+        break;
+    }
+
+    current_order++;
+  }
+
+  std::cout << "\n\n" << RESET << PRESS_ENTER;
+}
+
+void Program::print_menu() const {
+  std::cout << "\n\n"
+    << BLUE << "-------------------- Gestão de catálogo de produtos ----------------------\n"
+    << "| "
+    << pad_start(std::to_string(m_orders.size()), 4, '0')
+    << " Pedidos cadastrados                                               |\n"
+        << "| "
+    << pad_start(std::to_string(m_catalog.size()), 4, '0')
+    << " Produtos cadastrados                                              |\n"
+    << "| Selecione uma opção:                                                   |\n"
+    << "|                                                                        |\n"
+    << "| 1: Adicionar produto                                                   |\n"
+    << "| 2: Listar produtos                                                     |\n"
+    << "| 3: Cadastrar pedido                                                    |\n"
+    << "| 4: Listar pedidos                                                      |\n"
+    << "| 5: Buscar pedido                                                       |\n"
+    << "| 6: Buscar produto                                                      |\n"
+    << "| 7: Salvar registros                                                    |\n"
+    << "| 8: Sair                                                                |\n"
+    << "--------------------------------------------------------------------------\n\n"
+    << RED << "ERROR: [" << m_error_msg << "]\n" << RESET
+    << YELLOW << "MSG: [" << m_curr_msg << "]\n\n" << RESET
+    << ">>> ";
+}
+
+void print_usage(){
   std::cout << "AJUDA\n";
   exit(0);
 }
@@ -49,6 +108,31 @@ void print_welcome(){
 void print_add_product(){
   std::cout << "\nInformações do produto (<id>;<nome>;<preço>) > ";
 }
+
+#pragma endregion // RENDERS
+
+void Program::initialize(int argc, char* argv[]) {
+  m_state = e_program_state::STARTING;
+  m_curr_msg = "";
+  m_file_path = "";
+  m_error_msg = "";
+
+  for (int i = 1; i < argc; i++) {
+    std::string current_arg{ argv[i] };
+
+    if (current_arg[0] == '-') {
+      if (current_arg == "-f") {
+        std::string file_path = argv[i + 1];
+        m_file_path = file_path;
+      }
+      else if (current_arg == "-h" || current_arg == "--help") {
+        print_usage();
+      }
+    }
+  }
+}
+
+#pragma region LEITURAS_E_ESCRITAS
 
 Product parse_product(std::vector<std::string>& tokens) {
   auto id = std::stoi(tokens[0]);
@@ -161,27 +245,6 @@ void Program::read_file(){
   std::cout << oss.str() << "\n\n";
 }
 
-void Program::initialize(int argc, char* argv[]) {
-  m_state = e_program_state::STARTING;
-  m_curr_msg = "";
-  m_file_path = "";
-  m_error_msg = "";
-
-  for (int i = 1; i < argc; i++) {
-    std::string current_arg{ argv[i] };
-
-    if (current_arg[0] == '-') {
-      if (current_arg == "-f") {
-        std::string file_path = argv[i + 1];
-        m_file_path = file_path;
-      }
-      else if (current_arg == "-h" || current_arg == "--help") {
-        usage();
-      }
-    }
-  }
-}
-
 void Program::read_product(){
   std::vector<std::string> tokens = get_tokenized_line(std::cin);
 
@@ -241,6 +304,10 @@ void Program::read_query(){
   }
 }
 
+#pragma endregion // LEITURAS_E_ESCRITAS
+
+#pragma region GAME_LOOP
+
 void Program::process_events(){
   if(m_state == e_program_state::WELCOME){ 
     process_enter();
@@ -286,6 +353,26 @@ void Program::process_events(){
   }
 }
 
+void Program::update_state_from_menu() {
+  if (m_curr_menu_opt == e_menu_opt::ADD_PRODUCT) {
+    m_state = e_program_state::ADDING_PRODUCT;
+  } else if (m_curr_menu_opt == e_menu_opt::LIST_PRODUCTS) {
+    m_state = e_program_state::LISTING_PRODUCTS;
+  } else if (m_curr_menu_opt == e_menu_opt::CREATE_ORDER) {
+    m_state = e_program_state::CREATING_ORDER;
+  } else if (m_curr_menu_opt == e_menu_opt::LIST_ORDERS) {
+    m_state = e_program_state::LISTING_ORDERS;
+  } else if (m_curr_menu_opt == e_menu_opt::SEARCH_ORDER) {
+    m_state = e_program_state::SEARCHING_ORDERS;
+  } else if (m_curr_menu_opt == e_menu_opt::SEARCH_PRODUCT) {
+    m_state = e_program_state::SEARCHING_PRODUCTS;
+  } else if (m_curr_menu_opt == e_menu_opt::SAVE) {
+    m_state = e_program_state::SAVING;
+  } else if (m_curr_menu_opt == e_menu_opt::EXIT) {
+    m_state = e_program_state::QUITTING;
+  }
+}
+
 void Program::update() {
   if(m_state == e_program_state::STARTING){
     if (!m_file_path.empty())
@@ -296,27 +383,10 @@ void Program::update() {
     || m_state == e_program_state::READING_FILE){
     m_state = e_program_state::READING_MENU_OPT;
   } else if(m_state == e_program_state::READING_MENU_OPT){
-    if(m_curr_menu_opt == e_menu_opt::ADD_PRODUCT){
-      m_state = e_program_state::ADDING_PRODUCT;
-    } else if(m_curr_menu_opt == e_menu_opt::LIST_PRODUCTS){
-      m_state = e_program_state::LISTING_PRODUCTS;
-    } else if(m_curr_menu_opt == e_menu_opt::CREATE_ORDER){
-      m_state = e_program_state::CREATING_ORDER;
-    } else if(m_curr_menu_opt == e_menu_opt::LIST_ORDERS){
-      m_state = e_program_state::LISTING_ORDERS;
-    } else if(m_curr_menu_opt == e_menu_opt::SEARCH_ORDER){
-      m_state = e_program_state::SEARCHING_ORDERS;
-    } else if(m_curr_menu_opt == e_menu_opt::SEARCH_PRODUCT){
-      m_state = e_program_state::SEARCHING_PRODUCTS;
-    } else if(m_curr_menu_opt == e_menu_opt::SAVE){
-      m_state = e_program_state::SAVING;
-    } else if(m_curr_menu_opt == e_menu_opt::EXIT){
-      m_state = e_program_state::QUITTING;
-    }
+    update_state_from_menu();
   } else {
     m_state = e_program_state::READING_MENU_OPT;
   }
-  
 }
 
 void Program::render() const {
@@ -341,6 +411,8 @@ void Program::render() const {
   }
 }
 
+#pragma endregion // GAME_LOOP
+
 void Program::search_order(){
   std::cout << "searching orders";
 }
@@ -357,58 +429,4 @@ void Program::search_product(){
 
   std::cout << "\n\n" << RESET << PRESS_ENTER;
   process_enter();
-}
-
-void Program::print_products() const {
-  m_catalog.print_catalog();
-
-  std::cout << "\n\n" << RESET << PRESS_ENTER;
-}
-
-void Program::print_orders() const {
-  int current_order = 1, size= m_orders.size();
-  for(const auto& order : m_orders){
-    order->print();
-
-    if (current_order != size) {
-      std::cout << "\n\n Pressione <Enter> para ver o próximo pedido ou <X> "
-                    "para sair ("
-                << current_order << "/" << size << ") > ";
-
-      std::string line;
-      std::getline(std::cin, line);
-
-      if (line == "x" || line == "X")
-        break;
-    }
-
-    current_order++;
-  }
-
-  std::cout << "\n\n" << RESET << PRESS_ENTER;
-}
-
-void Program::print_menu() const {
-  std::cout << "\n\n"
-    << BLUE << "-------------------- Gestão de catálogo de produtos ----------------------\n"
-    << "| "
-    << pad_start(std::to_string(m_orders.size()), 4, '0')
-    << " Pedidos cadastrados                                               |\n"
-        << "| "
-    << pad_start(std::to_string(m_catalog.size()), 4, '0')
-    << " Produtos cadastrados                                              |\n"
-    << "| Selecione uma opção:                                                   |\n"
-    << "|                                                                        |\n"
-    << "| 1: Adicionar produto                                                   |\n"
-    << "| 2: Listar produtos                                                     |\n"
-    << "| 3: Cadastrar pedido                                                    |\n"
-    << "| 4: Listar pedidos                                                      |\n"
-    << "| 5: Buscar pedido                                                       |\n"
-    << "| 6: Buscar produto                                                      |\n"
-    << "| 7: Salvar registros                                                    |\n"
-    << "| 8: Sair                                                                |\n"
-    << "--------------------------------------------------------------------------\n\n"
-    << RED << "ERROR: [" << m_error_msg << "]\n" << RESET
-    << YELLOW << "MSG: [" << m_curr_msg << "]\n\n" << RESET
-    << ">>> ";
 }

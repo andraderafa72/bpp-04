@@ -11,11 +11,12 @@ void Order::add_product(product_t product){
 }
 
 void Order::print() const {
+  auto total = calculate_total();
   std::cout << "\n"
             << YELLOW << "# " << PRODUCT_SEPARATOR 
             << GREEN << "\nCliente:\n"
             << CUSTOMER_SEPARATOR << "| " << std::setw(50) << std::left
-            << m_customer << "R$ " << calculate_total() <<  " |\n"
+            << m_customer << "R$ " << total << " |\n"
             << CUSTOMER_SEPARATOR;
 
   print_catalog_header(true);

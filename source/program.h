@@ -61,6 +61,8 @@ class Program {
 
   void write_file() const;
 
+  void update_state_from_menu();
+
 public:
   bool is_quitting() { 
     return m_state == e_program_state::QUITTING;
