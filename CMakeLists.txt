@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.31)
 project(DateTime)
 
 # Define o padrão de C++ (por exemplo, C++17)
@@ -12,3 +12,5 @@ add_subdirectory(external/googletest)
 
 # Adiciona o diretório "test" ao projeto
 add_subdirectory(tests)
+
+set(CMAKE_BUILD_TYPE Debug)

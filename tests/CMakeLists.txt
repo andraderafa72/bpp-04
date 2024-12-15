@@ -4,6 +4,8 @@ add_executable(catalog_tests
     unit_tests.cpp
 )
 
+# set(LOG_ENABLED 0)
+
 # Liga o Google Test e a biblioteca a ser testada ao executável
 target_link_libraries(catalog_tests
     gtest

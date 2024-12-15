@@ -184,7 +184,7 @@ void Program::initialize(int argc, char* argv[]) {
 
 void Program::read_product(){
   std::vector<std::string> tokens = get_tokenized_line(std::cin);
-  std::cout << "size: " << tokens.size();
+
   if(tokens.size() != 3) {
     m_error_msg = "Informações de produto inválidas";
     return;

@@ -13,6 +13,8 @@
 #define BLUE    "\033[34m"
 #define BOLD    "\033[1m" 
 
+#define LOGGING true
+
 inline std::string pad_start(const std::string& input, size_t targetLength, char padChar = ' ') {
   if (input.length() >= targetLength) {
     return input;

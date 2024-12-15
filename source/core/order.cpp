@@ -1,5 +1,7 @@
 #include "order.h"
 #include "common.h"
+#include "lib/messages.h"
+#include <string>
 
 #define PRODUCT_SEPARATOR "------------------------------------------------------------------------------------"
 #define CUSTOMER_SEPARATOR "------------------------------------------------------\n"
@@ -35,6 +37,9 @@ float Order::calculate_total() const {
     total += product->m_price;
     ++ptr;
   }
+
+  coms::Message("Total calculado para o pedido de " + m_customer + ": " +
+                std::to_string(total));
 
   return total;
 }

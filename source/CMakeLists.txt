@@ -1,5 +1,7 @@
 project (Catalog VERSION 1.0.0 LANGUAGES CXX )
 
+set(CMAKE_BUILD_TYPE Debug)
+
 # Currently CMake (since 2.8.5) supports generation of compilation databases
 # for Unix Makefile builds (Ninja builds in the works) with the option
 # CMAKE_EXPORT_COMPILE_COMMANDS.
@@ -14,6 +16,7 @@ set( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${GCC_COMPILE_FLAGS} ${PREPROCESSING_F
 #=== Main App ===
 
 add_library(CatalogLib
+    core/lib/messages.cpp
     core/catalog.cpp
     core/order.cpp
 )
